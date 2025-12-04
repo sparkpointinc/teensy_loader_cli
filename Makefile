@@ -1,12 +1,12 @@
-OS ?= LINUX
+# OS ?= LINUX
 #OS ?= WINDOWS
-#OS ?= MACOSX
+OS ?= MACOSX
 #OS ?= BSD
 
 # uncomment this to use libusb on Macintosh, instead of Apple's HID manager via IOKit
 # this is technically not the "correct" way to support Macs, but it's been reported to
 # work.
-#USE_LIBUSB ?= YES
+USE_LIBUSB ?= YES
 
 ifeq ($(OS), LINUX)  # also works on FreeBSD
 CC ?= gcc
@@ -27,7 +27,7 @@ ifeq ($(USE_LIBUSB), YES)
 CC ?= gcc
 CFLAGS ?= -O2 -Wall
 teensy_loader_cli: teensy_loader_cli.c
-	$(CC) $(CFLAGS) -s -DUSE_LIBUSB -DMACOSX -o teensy_loader_cli teensy_loader_cli.c -lusb -I /usr/local/include -L/usr/local/lib
+	$(CC) $(CFLAGS) -s -DUSE_LIBUSB -DMACOSX -o teensy_loader_cli teensy_loader_cli.c -lusb -I /opt/homebrew/include -L/opt/homebrew/lib
 	 
 else
 CC ?= gcc

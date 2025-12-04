@@ -254,6 +254,10 @@ usb_dev_handle * open_usb_device(int vid, int pid)
 				continue;
 			}
 			#ifdef LIBUSB_HAS_GET_DRIVER_NP
+			// MAC OS-X - OS kernel driver (IOUSBFamily) claims the device and won't
+			// detach it. Need to skip this step so libusb can send the reboot 
+			// control message without conflict
+			#if !defined(MACOSX)
 			r = usb_get_driver_np(h, 0, buf, sizeof(buf));
 			if (r >= 0) {
 				r = usb_detach_kernel_driver_np(h, 0);
@@ -263,6 +267,7 @@ usb_dev_handle * open_usb_device(int vid, int pid)
 					continue;
 				}
 			}
+			#endif
 			#endif
 			// Mac OS-X - removing this call to usb_claim_interface() might allow
 			// this to work, even though it is a clear misuse of the libusb API.
@@ -334,7 +339,16 @@ int soft_reboot(void)
 {
 	usb_dev_handle *serial_handle = NULL;
 
-	serial_handle = open_usb_device(0x16C0, 0x0483);
+	// 0483 = Serial
+	// 048B = Dual Serial
+	int pids[] = {0x0483, 0x048B, 0};
+	int i;
+
+	for (i=0; pids[i] != 0; i++) {
+		serial_handle = open_usb_device(0x16C0, pids[i]);
+		if (serial_handle) break;
+	}
+
 	if (!serial_handle) {
 		char *error = usb_strerror();
 		printf("Error opening USB device: %s\n", error);
